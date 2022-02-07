@@ -5,9 +5,10 @@ import requests
 from io import BytesIO
 
 min_spn, max_spn = 0.0005, 0.008
-
+scale = 5
 l1, l2 = 37.621094, 55.753605
 spn1, spn2 = 0.002, 0.002
+
 response = requests.get(f"http://static-maps.yandex.ru/1.x/?ll=37.621094,55.753605&spn=0.002,0.0022&l=map")
 
 
@@ -48,11 +49,29 @@ while running:
                 if min_spn < spn1:
                     spn1 -= 0.0005
                     spn2 -= 0.0005
+                    scale -= 1
                     ch = True
             elif event.key == 1073741902:
                 if max_spn > spn1:
                     spn1 += 0.0005
                     spn2 += 0.0005
+                    scale += 1
+                    ch = True
+            elif event.key == 1073741906:
+                if l2 + 0.0001 * scale < 90:
+                    l2 += 0.0001 * scale
+                    ch = True
+            elif event.key == 1073741905:
+                if -90 < l2 - 0.0001 * scale:
+                    l2 -= 0.0001 * scale
+                    ch = True
+            elif event.key == 1073741904:
+                if -180 < l1 - 0.0001 * scale:
+                    l1 -= 0.0001 * scale
+                    ch = True
+            elif event.key == 1073741903:
+                if l1 + 0.0001 * scale < 180:
+                    l1 += 0.0001 * scale
                     ch = True
         if ch:
             change_response()
