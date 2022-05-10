@@ -11,6 +11,7 @@ l1, l2 = 37.621094, 55.753605
 spn1, spn2 = 0.002, 0.002
 mark = ''
 cur_address = ''
+cur_index = ''
 
 response = requests.get(f"http://static-maps.yandex.ru/1.x/?ll=37.621094,55.753605&spn=0.002,0.0022&l=map")
 
@@ -30,11 +31,13 @@ def geocode(address):
 
 
 def get_ll_span(address):
-    global cur_address
+    global cur_address, cur_index
     toponym = geocode(address)
     cur_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
-    if len(cur_address) > 76:
-        cur_address = cur_address[:73] + '...'
+    try:
+        cur_index = toponym["metaDataProperty"]["GeocoderMetaData"]["Address"]['postal_code']
+    except Exception:
+        pass
     if not toponym:
         return None, None
     toponym_coodrinates = toponym['Point']['pos']
@@ -84,12 +87,14 @@ sat_im = sat_im_dark
 show_map(screen)
 running = True
 ch = False
+show_ind = False
 sat_ch = False
 font = pygame.font.Font(None, 26)
 font2 = pygame.font.Font(None, 18)
 clock = pygame.time.Clock()
 input_box = pygame.Rect(5, 5, 140, 32)
 reset_but = pygame.Rect(5, 375, 133, 30)
+ind_but = pygame.Rect(5, 335, 80, 30)
 address_box = pygame.Rect(5, 415, 500, 30)
 color_inactive = pygame.Color('gray')
 color_active = pygame.Color('white')
@@ -98,6 +103,7 @@ txt_color = pygame.Color('black')
 active = False
 text = ''
 txt_res_but = font.render('Сбросить точку', True, txt_color)
+txt_ind_but = font.render('Индекс', True, txt_color)
 while running:
     for event in pygame.event.get():
         pygame.display.set_caption('Яндекс Карты')
@@ -120,7 +126,10 @@ while running:
             if reset_but.collidepoint(event.pos):
                 mark = ''
                 cur_address = ''
+                cur_index = ''
                 ch = True
+            if ind_but.collidepoint(event.pos):
+                show_ind = not show_ind
             color = color_active if active else color_inactive
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -174,16 +183,24 @@ while running:
             show_map(screen)
             ch = False
         pygame.draw.rect(screen, color, input_box, 0)
+        pygame.draw.rect(screen, color_active, ind_but, 0)
         pygame.draw.rect(screen, color_active, reset_but, 0)
         pygame.draw.rect(screen, color_active, address_box, 0)
         txt_surface = font.render(text, True, txt_color)
-        txt_address = font2.render(cur_address, True, txt_color)
+        if show_ind:
+            cont = cur_index + ' ' + cur_address
+        else:
+            cont = cur_address
+        if len(cont) > 76:
+            cont = cont[:73] + '...'
+        txt_address = font2.render(cont, True, txt_color)
+        cont = ''
         width = max(200, txt_surface.get_width() + 10)
         input_box.w = width
         screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
         screen.blit(txt_res_but, (6, 380))
         screen.blit(txt_address, (7, 424))
-
+        screen.blit(txt_ind_but, (10, 340))
         pygame.display.flip()
         clock.tick(30)
 pygame.quit()
