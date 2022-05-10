@@ -83,6 +83,7 @@ sat_ch = False
 font = pygame.font.Font(None, 26)
 clock = pygame.time.Clock()
 input_box = pygame.Rect(5, 5, 140, 32)
+reset_but = pygame.Rect(5, 415, 133, 30)
 color_inactive = pygame.Color('gray')
 color_active = pygame.Color('white')
 color = color_inactive
@@ -108,6 +109,8 @@ while running:
                 active = not active
             else:
                 active = False
+            if reset_but.collidepoint(event.pos):
+                mark = ''
             color = color_active if active else color_inactive
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -160,10 +163,13 @@ while running:
             change_response()
             show_map(screen)
         pygame.draw.rect(screen, color, input_box, 0)
+        pygame.draw.rect(screen, color_active, reset_but, 0)
         txt_surface = font.render(text, True, txt_color)
+        txt_res_but = font.render('Сбросить точку', True, txt_color)
         width = max(200, txt_surface.get_width() + 10)
         input_box.w = width
         screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        screen.blit(txt_res_but, (5, 420))
         pygame.display.flip()
         clock.tick(30)
 pygame.quit()
